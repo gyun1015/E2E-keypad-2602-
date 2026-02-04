@@ -1,34 +1,33 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import uuid
 
-# models.keypad가 아니라 models_keypad라면 import 경로 주의 (보통 폴더 구조상 models.keypad가 맞음)
 from models.keypad import KeypadResponse
 from services.keypad_service import generate_keypad
 from store.session_store import save_session
 
 router = APIRouter()
 
-# 1. 경로에 따옴표 추가 ("/init")
 @router.post("/init", response_model=KeypadResponse)
-def init_keypad():  # 2. 콜론 추가
-    session_id = uuid.uuid4().hex
-    
-    # 3. 키패드 생성 (여기서 각 키는 dict 형태임: {'type':..., 'id':..., 'value':...})
-    layout = generate_keypad()
+def init_keypad():
+    try:
+        # 1. 키패드 생성 (문제지와 답안지 분리)
+        # client_layout: 이미지와 ID만 있음 (보안 안전)
+        # server_map: ID와 실제 숫자 매핑 (서버만 가짐)
+        client_layout, server_map = generate_keypad()
+        
+        # 2. 세션 ID 생성
+        session_id = uuid.uuid4().hex
+        
+        # 3. 서버에 답안지 저장 (TTL 3분)
+        save_session(session_id, server_map, ttl=180)
 
-    # 4. 세션 저장용 맵 생성 (ID -> 실제 값)
-    # 나중에 사용자가 ID를 보내면 이 맵을 보고 어떤 숫자인지 알기 위함
-    token_map = {
-        key["id"]: key["value"]    # 구문 수정: key['id']
-        for key in layout
-        if key["type"] == "number" # 구문 수정: "number"
-    }
-
-    save_session(session_id, token_map, ttl=60)
-
-    # 5. 응답 반환 (구문 수정: 콜론 추가)
-    return {
-        "session_id": session_id,
-        "layout": layout,
-        "expires_in": 60
-    }
+        # 4. 클라이언트에 문제지 전송
+        return {
+            "session_id": session_id,
+            "layout": client_layout,
+            "expires_in": 180
+        }
+        
+    except Exception as e:
+        print(f"Keypad Init Error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")

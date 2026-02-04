@@ -1,25 +1,27 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles   # ✅ 추가
-
 from api.keypad import router as keypad_router
+import os
 
 app = FastAPI()
 
-# ✅ CORS
+# 환경 변수 혹은 기본값 사용
+origins = [
+    "http://localhost:5173",  # React Default Port
+    "http://127.0.0.1:5173"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ✅ static 파일 서빙 설정 (중요)
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 @app.get("/")
-def health():
-    return {"status": "ok"}
+def health_check():
+    return {"status": "ok", "service": "E2E Secure Keypad"}
 
+# 라우터 등록
 app.include_router(keypad_router, prefix="/keypad")
