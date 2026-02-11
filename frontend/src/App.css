@@ -1,42 +1,140 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap");
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #070320; /* 요청하신 심해 배경색 */
+  font-family: "Pretendard", sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.container-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* 컨테이너: 배경과 어울리는 다크 네이비 유리 질감 */
+.keypad-container {
+  width: 100%;
+  max-width: 340px;
+  background: rgba(30, 30, 45, 0.7); /* 반투명 다크 */
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 32px;
+  padding: 40px 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  box-sizing: border-box;
+  animation: slideUpFade 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.card {
-  padding: 2em;
+/* 그리드 및 버튼: 구조 복구 */
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
-.read-the-docs {
-  color: #888;
+.key-button {
+  aspect-ratio: 1.3 / 1; /* 요청하신 가로 비율 유지 */
+  border: none;
+  background: #2c2c2c; /* 버튼 색상 복구 */
+  border-radius: 16px;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  display: flex;
+  transition: background-color 0.2s, transform 0.1s;
 }
+
+.key-button:active {
+  background-color: #3d3d3d;
+  transform: scale(0.97);
+}
+
+.key-button img {
+  width: 100%;
+  height: 100%;
+  /* 이미지 왜곡 방지를 위해 object-fit을 이전 상태로 복구 */
+  object-fit: fill; 
+  display: block;
+  filter: invert(0.9) brightness(1.2);
+}
+
+.key-button.empty {
+  background: transparent;
+  pointer-events: none;
+}
+
+/* 입력 도트: 사이언 블루 포인트 */
+.input-display {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.input-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #333;
+  transition: 0.2s;
+}
+
+.input-dot.active {
+  background-color: #00f2ff;
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+  transform: scale(1.2);
+}
+
+/* 디버그 패널: JetBrains Mono 폰트 적용 및 색상 조화 */
+.debug-panel {
+  width: 100%;
+  max-width: 500px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 242, 255, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 20px;
+  color: #00f2ff;
+  /* 폰트 교체 */
+  font-family: 'JetBrains Mono', monospace;
+  box-sizing: border-box;
+  word-break: break-all;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.token-item {
+  margin-bottom: 8px;
+  line-height: 1.4;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 4px;
+}
+
+.token-index {
+  color: #555c85;
+  margin-right: 8px;
+}
+
+/* 텍스트 스타일 */
+.keypad-header h2 { color: #fff; text-align: center; margin: 0 0 8px 0; }
+.keypad-header p { color: #6e6e8e; text-align: center; font-size: 0.85rem; margin-bottom: 30px; }
+.reset-button { width: 100%; margin-top: 30px; background: none; border: none; color: #555c85; text-decoration: underline; cursor: pointer; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
