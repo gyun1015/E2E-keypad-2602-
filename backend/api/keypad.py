@@ -1,33 +1,47 @@
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 import uuid
-
 from models.keypad import KeypadResponse
 from services.keypad_service import generate_keypad
-from store.session_store import save_session
+from store.session_store import save_session, get_session
 
 router = APIRouter()
+
+class SubmitRequest(BaseModel):
+    session_id: str
+    payload: str
 
 @router.post("/init", response_model=KeypadResponse)
 def init_keypad():
     try:
-        # 1. 키패드 생성 (문제지와 답안지 분리)
-        # client_layout: 이미지와 ID만 있음 (보안 안전)
-        # server_map: ID와 실제 숫자 매핑 (서버만 가짐)
         client_layout, server_map = generate_keypad()
-        
-        # 2. 세션 ID 생성
         session_id = uuid.uuid4().hex
         
-        # 3. 서버에 답안지 저장 (TTL 3분)
+        # 세션 저장 (3분 유지)
         save_session(session_id, server_map, ttl=180)
 
-        # 4. 클라이언트에 문제지 전송
         return {
             "session_id": session_id,
             "layout": client_layout,
             "expires_in": 180
         }
-        
     except Exception as e:
-        print(f"Keypad Init Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.post("/submit")
+def submit_keypad(data: SubmitRequest):
+    # 1. 정답지(Mapping) 조회
+    server_map = get_session(data.session_id)
+    if not server_map:
+        raise HTTPException(status_code=400, detail="유효하지 않은 세션입니다.")
+
+    # 2. 은행사로 보낼 최종 패키지 (이 데이터를 은행 API로 전송하면 됩니다)
+    final_data = {
+        "encrypted_payload": data.payload,
+        "keypad_mapping": server_map
+    }
+
+    # 콘솔에는 핵심 데이터만 간결하게 출력
+    print(f"🚀 Forwarding to Bank: {data.session_id}")
+    
+    return {"status": "success"}
